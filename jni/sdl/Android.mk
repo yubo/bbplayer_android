@@ -12,6 +12,12 @@ LOCAL_SRC_FILES := thread/pthread/SDL_syscond.c \
 		thread/pthread/SDL_systhread.c \
 		thread/SDL_thread.c \
 		SDL_utils.c \
+		SDL.c \
+		SDL_fatal.c \
+		events/SDL_events.c \
+		events/SDL_quit.c \
+		timer/SDL_timer.c \
+		timer/unix/SDL_systimer.c \
 
 
 include $(BUILD_STATIC_LIBRARY)

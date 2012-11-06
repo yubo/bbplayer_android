@@ -24,10 +24,11 @@
 
 #include <stdint.h>
 
-#include "libavcodec/avcodec.h"
-#include "libavfilter/avfilter.h"
-#include "libavformat/avformat.h"
-#include "libswscale/swscale.h"
+//	#include "libavcodec/avcodec.h"
+//	#include "libavfilter/avfilter.h"
+//	#include "libavformat/avformat.h"
+//	#include "libswscale/swscale.h"
+#include  "importff.h"
 
 #ifdef __MINGW32__
 #undef main /* We don't want SDL to override our main() */
@@ -310,12 +311,6 @@ int opt_bsfs(const char *opt, const char *arg);
  */
 int opt_protocols(const char *opt, const char *arg);
 
-/**
- * Print a listing containing all the pixel formats supported by the
- * program.
- * This option processing function does not utilize the arguments.
- */
-int opt_pix_fmts(const char *opt, const char *arg);
 
 /**
  * Print a listing containing all the sample formats supported by the

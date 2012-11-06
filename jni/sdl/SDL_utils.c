@@ -6,8 +6,10 @@ void SDL_Error(SDL_errorcode code){
 void SDL_SetError(char *c){
 	eLog("SDL_SetError %s",c);
 }
-
-
+void SDL_ClearError(void)
+{
+}
+/*
 void SDL_Delay (Uint32 ms)
 {
 	int was_error;
@@ -22,6 +24,6 @@ void SDL_Delay (Uint32 ms)
 		was_error = nanosleep(&tv, &elapsed);
 	} while ( was_error );
 }
-
+*/
 
 

@@ -899,40 +899,7 @@ int opt_filters(const char *opt, const char *arg)
     return 0;
 }
 
-int opt_pix_fmts(const char *opt, const char *arg)
-{
-    enum PixelFormat pix_fmt;
 
-    printf("Pixel formats:\n"
-           "I.... = Supported Input  format for conversion\n"
-           ".O... = Supported Output format for conversion\n"
-           "..H.. = Hardware accelerated format\n"
-           "...P. = Paletted format\n"
-           "....B = Bitstream format\n"
-           "FLAGS NAME            NB_COMPONENTS BITS_PER_PIXEL\n"
-           "-----\n");
-
-#if !CONFIG_SWSCALE
-#   define sws_isSupportedInput(x)  0
-#   define sws_isSupportedOutput(x) 0
-#endif
-
-    for (pix_fmt = 0; pix_fmt < PIX_FMT_NB; pix_fmt++) {
-        const AVPixFmtDescriptor *pix_desc = &av_pix_fmt_descriptors[pix_fmt];
-        if(!pix_desc->name)
-            continue;
-        printf("%c%c%c%c%c %-16s       %d            %2d\n",
-               sws_isSupportedInput (pix_fmt)      ? 'I' : '.',
-               sws_isSupportedOutput(pix_fmt)      ? 'O' : '.',
-               pix_desc->flags & PIX_FMT_HWACCEL   ? 'H' : '.',
-               pix_desc->flags & PIX_FMT_PAL       ? 'P' : '.',
-               pix_desc->flags & PIX_FMT_BITSTREAM ? 'B' : '.',
-               pix_desc->name,
-               pix_desc->nb_components,
-               av_get_bits_per_pixel(pix_desc));
-    }
-    return 0;
-}
 
 int show_sample_fmts(const char *opt, const char *arg)
 {

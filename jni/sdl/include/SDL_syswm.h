@@ -55,8 +55,8 @@ typedef struct SDL_SysWMinfo SDL_SysWMinfo;
 #define Cursor X11Cursor
 #endif
 
-#include <X11/Xlib.h>
-#include <X11/Xatom.h>
+//	#include <X11/Xlib.h>
+//	#include <X11/Xatom.h>
 
 #if defined(__APPLE__) && defined(__MACH__)
 /* matches the re-define above */
@@ -72,9 +72,9 @@ typedef enum {
 struct SDL_SysWMmsg {
 	SDL_version version;
 	SDL_SYSWM_TYPE subsystem;
-	union {
-	    XEvent xevent;
-	} event;
+//		union {
+//		    XEvent xevent;
+//		} event;
 };
 
 /** The UNIX custom window manager information structure.
@@ -84,33 +84,33 @@ struct SDL_SysWMmsg {
 typedef struct SDL_SysWMinfo {
 	SDL_version version;
 	SDL_SYSWM_TYPE subsystem;
-	union {
-	    struct {
-	    	Display *display;	/**< The X11 display */
-	    	Window window;		/**< The X11 display window */
-		/** These locking functions should be called around
-                 *  any X11 functions using the display variable, 
-                 *  but not the gfxdisplay variable.
-                 *  They lock the event thread, so should not be
-		 *  called around event functions or from event filters.
-		 */
-                /*@{*/
-		void (*lock_func)(void);
-		void (*unlock_func)(void);
-                /*@}*/
-
-		/** @name Introduced in SDL 1.0.2 */
-                /*@{*/
-	    	Window fswindow;	/**< The X11 fullscreen window */
-	    	Window wmwindow;	/**< The X11 managed input window */
-                /*@}*/
-
-		/** @name Introduced in SDL 1.2.12 */
-                /*@{*/
-		Display *gfxdisplay;	/**< The X11 display to which rendering is done */
-                /*@}*/
-	    } x11;
-	} info;
+//		union {
+//		    struct {
+//		    	Display *display;	/**< The X11 display */
+//		    	Window window;		/**< The X11 display window */
+//			/** These locking functions should be called around
+//	                 *  any X11 functions using the display variable, 
+//	                 *  but not the gfxdisplay variable.
+//	                 *  They lock the event thread, so should not be
+//			 *  called around event functions or from event filters.
+//			 */
+//	                /*@{*/
+//			void (*lock_func)(void);
+//			void (*unlock_func)(void);
+//	                /*@}*/
+//	
+//			/** @name Introduced in SDL 1.0.2 */
+//	                /*@{*/
+//		    	Window fswindow;	/**< The X11 fullscreen window */
+//		    	Window wmwindow;	/**< The X11 managed input window */
+//	                /*@}*/
+//	
+//			/** @name Introduced in SDL 1.2.12 */
+//	                /*@{*/
+//			Display *gfxdisplay;	/**< The X11 display to which rendering is done */
+//	                /*@}*/
+//		    } x11;
+//		} info;
 } SDL_SysWMinfo;
 
 #elif defined(SDL_VIDEO_DRIVER_NANOX)

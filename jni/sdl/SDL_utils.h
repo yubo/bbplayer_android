@@ -8,6 +8,5 @@
 
 void SDL_Error(SDL_errorcode code);
 void SDL_SetError(char *c);
-void SDL_Delay (Uint32 ms);
-
+void SDL_ClearError(void);
 

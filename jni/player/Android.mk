@@ -1,25 +1,43 @@
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 LOCAL_MODULE    := native-player
+#BUILD_TYPE := BIG
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../libffmpeg \
 			$(LOCAL_PATH)/../sdl \
 			$(LOCAL_PATH)/../sdl/include 
 
-LOCAL_LDLIBS :=  -L$(call host-path,$(LOCAL_PATH)/../libffmpeg/lib) \
-		-lz \
+
+LOCAL_LDLIBS := -lz \
 		-llog \
 		-lGLESv1_CM \
 		-landroid \
 		-lEGL \
-		-lffmpeg \
-		-lOpenSLES
-#LOCAL_SHARED_LIBRARIES := avutil avcodec avformat swscale 
-LOCAL_STATIC_LIBRARIES := sdl android_native_app_glue
-LOCAL_SRC_FILES := player.c utils.c cmdutils.c
+		-lOpenSLES \
+		-ldl
+
+		
+LOCAL_STATIC_LIBRARIES := sdl 
+
+LOCAL_SRC_FILES := player.c \
+		utils.c \
+		cmdutils.c \
+		app-android.c \
+		importff.c
+
+
+ifeq ($(BUILD_TYPE),BIG)
+	LOCAL_LDLIBS := -lz \
+			-llog \
+			-lGLESv1_CM \
+			-landroid \
+			-lEGL \
+			-lOpenSLES 
+	LOCAL_WHOLE_STATIC_LIBRARIES := sdl avutil avcodec avformat swscale swresample
+endif
+
+LOCAL_CFLAGS := -DLOG
+
+
 
 include $(BUILD_SHARED_LIBRARY)
-
-$(call import-module,android/native_app_glue)
-
-

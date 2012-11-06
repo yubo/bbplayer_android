@@ -1,15 +1,19 @@
+/*
+ * simple android media player based on the FFmpeg libraries
+ * 2012-3
+ * yubo@yubo.org
+ */
+
 #ifndef _player_h_
 #define _player_h_
 
 // for system
-#include <android_native_app_glue.h>
 #include <jni.h>
 #include <errno.h>
 #include <unistd.h>
 #include <assert.h>
 #include <pthread.h>
 #include <string.h>
-#include <stdlib.h>
 #include <android/log.h>
 #include <android/sensor.h>
 
@@ -19,22 +23,24 @@
 #include <math.h>
 #include <limits.h>
 #include <signal.h>
-#include "libavutil/avstring.h"
-#include "libavutil/colorspace.h"
-#include "libavutil/mathematics.h"
-#include "libavutil/pixdesc.h"
-#include "libavutil/imgutils.h"
-#include "libavutil/dict.h"
-#include "libavutil/parseutils.h"
-#include "libavutil/samplefmt.h"
-#include "libavutil/avassert.h"
-#include "libavformat/avformat.h"
-#include "libavdevice/avdevice.h"
-#include "libswscale/swscale.h"
-#include "libavcodec/audioconvert.h"
-#include "libavutil/opt.h"
-#include "libavcodec/avfft.h"
-#include "libswresample/swresample.h"
+//	#include "libavutil/avstring.h"
+//	#include "libavutil/colorspace.h"
+//	#include "libavutil/mathematics.h"
+//	#include "libavutil/pixdesc.h"
+//	#include "libavutil/imgutils.h"
+//	#include "libavutil/dict.h"
+//	#include "libavutil/parseutils.h"
+//	#include "libavutil/samplefmt.h"
+//	#include "libavutil/avassert.h"
+//	#include "libavformat/avformat.h"
+//	#include "libavdevice/avdevice.h"
+//	#include "libswscale/swscale.h"
+//	#include "libavcodec/audioconvert.h"
+//	#include "libavutil/opt.h"
+//	#include "libavcodec/avfft.h"
+//	#include "libswresample/swresample.h"
+#include  "importff.h"
+
 
 // for SDL, will fixed 
 #include <SDL.h>
@@ -56,20 +62,15 @@
 
 // for player
 #include "cmdutils.h"
+#include "utils.h"
 
 
 
-#define UNUSED  __attribute__((unused))
-#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__))
-#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, LOG_TAG, __VA_ARGS__))
-#define LOGE(...) ((void)__android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__))
-#define eLog(...) ((void)__android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__))
-#define iLog(...) ((void)__android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__))
-#define wLog(...) ((void)__android_log_print(ANDROID_LOG_WARN, LOG_TAG, __VA_ARGS__))
 
 
 
-#define MAX_QUEUE_SIZE (15 * 1024 * 1024)
+
+#define MAX_QUEUE_SIZE (24 * 1024 * 1024)
 #define MIN_AUDIOQ_SIZE (20 * 16 * 1024)
 #define MIN_FRAMES 5
 
@@ -95,14 +96,13 @@ static int sws_flags = SWS_BICUBIC;
 
 
 
-#define VIDEO_PICTURE_QUEUE_SIZE 2
+#define VIDEO_PICTURE_QUEUE_SIZE 4
 #define SUBPICTURE_QUEUE_SIZE 4
 
-enum{
-FF_ALLOC_EVENT = 0x20,
-FF_REFRESH_EVENT,
-FF_QUIT_EVENT ,
-};
+#define FF_ALLOC_EVENT   (SDL_USEREVENT)
+#define FF_REFRESH_EVENT (SDL_USEREVENT + 1)
+#define FF_QUIT_EVENT    (SDL_USEREVENT + 2)
+
 
 enum {
     AV_SYNC_AUDIO_MASTER, /* default choice */
@@ -110,6 +110,17 @@ enum {
     AV_SYNC_EXTERNAL_CLOCK, /* synchronize to an external clock */
 };
 
+
+enum{
+    NOTIFY_TOUCH_UP=1,
+    NOTIFY_TOUCH_DOWN,
+    NOTIFY_TOUCH_LEFT,
+    NOTIFY_TOUCH_RIGHT,
+};
+
+enum {
+    SYNC_PLAYER_CLOCK=1,
+};
 
 /**
  * Our saved state data.
@@ -191,13 +202,12 @@ typedef struct SubPicture {
 } SubPicture;
 
 
-struct engine;
-
 typedef struct VideoState {
     SDL_Thread *read_tid;
+    SDL_Thread *loop_tid;
     SDL_Thread *video_tid;
     SDL_Thread *audio_tid;
-    SDL_Thread *refresh_tid;
+//    SDL_Thread *refresh_tid;
     AVInputFormat *iformat;
     int no_background;
     int abort_request;
@@ -224,7 +234,7 @@ typedef struct VideoState {
     AVStream *audio_st;
     PacketQueue audioq;
     int audio_hw_buf_size;
-    DECLARE_ALIGNED(16,uint8_t,audio_buf2)[AVCODEC_MAX_AUDIO_FRAME_SIZE * 4];
+
     uint8_t silence_buf[SDL_AUDIO_BUFFER_SIZE];
     uint8_t *audio_buf;
     uint8_t *audio_buf1;
@@ -288,60 +298,55 @@ typedef struct VideoState {
     int pictq_size, pictq_rindex, pictq_windex;
     SDL_mutex *pictq_mutex;
     SDL_cond *pictq_cond;
+//	    SDL_mutex *surface_mutex;
+//	    SDL_cond *surface_cond;
+//	    SDL_cond *surface2_cond;
     struct SwsContext *img_convert_ctx;
     char filename[1024];
     int width, height, xleft, ytop;
     int step;
     int refresh;
-    struct engine *engine;
-
+    int skip_pkt;
+    int sensor;
+    JNIEnv  *np_env;
+    jobject np_obj;
+    jclass np_cls;
+    jmethodID np_NativePlayerMsg_mid;
+    
+//    SDL_Rect rect;
+//    EGL_Overlay *gl_bmp;
+    DECLARE_ALIGNED(16,uint8_t,audio_buf2)[AVCODEC_MAX_AUDIO_FRAME_SIZE * 4];
 } VideoState;
 
 
 
 
-/**
- * Shared state for our app.
- */
-struct engine {
-    struct android_app* app;
 
-    ASensorManager* sensorManager;
-    const ASensor* accelerometerSensor;
-    ASensorEventQueue* sensorEventQueue;
+static void engine_draw_frame();
+static void engine_term_display();
+static int  lockmgr(void **mtx, enum AVLockOp op);
 
-    int animating;
-    EGLDisplay display;
-    EGLSurface surface;
-    EGLContext context;
-    int32_t width;
-    int32_t height;
-    struct saved_state state;
-    VideoState *is;
-
-};
-
-
-int playerDraw(struct engine* engine);
-int playerDone();
-int playerInit(struct engine* engine);
+EGL_Overlay *EGL_CreateGRBOverlay(int w, int h, Uint32 format);
+EGL_Surface *EGL_SetVideoMode (int width, int height, int bpp, Uint32 flags, VideoState *is);
+VideoState  *nativeInit();
 
 void check_gl_error(const char* op);
+void EGL_FreeGRBOverlay(EGL_Overlay *overlay);
+void check_gl_error(const char* op);
+void egl_audio_callback(SLAndroidSimpleBufferQueueItf bq, void *context);
+void audio_term();
 
 int EGL_DisplayRGBOverlay(VideoState *is,  EGL_Overlay *overlay, SDL_Rect *dstrect);
-EGL_Overlay *EGL_CreateGRBOverlay(int w, int h, Uint32 format);
-void EGL_FreeGRBOverlay(EGL_Overlay *overlay);
+int native_main();
+int nativeResize(int w, int h, VideoState *is);
+int nativeStart( int w, int h,VideoState *is);
+int nativeRender(VideoState *is);
+int nativePause(VideoState *is);
+int nativeDone(VideoState *is);
+int nativeSeek(int seek,VideoState *is);
+int nativeGetClock(VideoState *is);
+int nativeSetObj(jobject thiz, VideoState *is);
+int RemotePlayerMsg(int msgid, VideoState *is);
 
-int saveYUV(AVFrame * pFrame);
-static void PushEvent(VideoState *is, int8_t cmd);
-static int engine_init_display(struct engine* engine);
-static void engine_draw_frame(struct engine* engine);
-static void engine_term_display(struct engine* engine);
-static int32_t engine_handle_input(struct android_app* app, AInputEvent* event);
-static void engine_handle_cmd(struct android_app* app, int32_t cmd);
-void android_main(struct android_app* state);
-void check_gl_error(const char* op);
-EGL_Surface * EGL_SetVideoMode (int width, int height, int bpp, Uint32 flags, VideoState *is);
-void egl_audio_callback(SLAndroidSimpleBufferQueueItf bq, void *context);
 #endif
 
